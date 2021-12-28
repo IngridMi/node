@@ -456,6 +456,16 @@ further errors except from `_destroy()` may be emitted as `'error'`.
 Implementors should not override this method,
 but instead implement [`writable._destroy()`][writable-_destroy].
 
+##### `writable.closed`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+* {boolean}
+
+Is `true` after `'close'` has been emitted.
+
 ##### `writable.destroyed`
 
 <!-- YAML
@@ -586,6 +596,18 @@ added: v11.4.0
 Is `true` if it is safe to call [`writable.write()`][stream-write], which means
 the stream has not been destroyed, errored or ended.
 
+##### `writable.writableAborted`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+> Stability: 1 - Experimental
+
+* {boolean}
+
+Returns whether the stream was destroyed or errored before emitting `'finish'`.
+
 ##### `writable.writableEnded`
 
 <!-- YAML
@@ -610,6 +632,17 @@ added:
 
 Number of times [`writable.uncork()`][stream-uncork] needs to be
 called in order to fully uncork the stream.
+
+##### `writable.errored`
+
+<!-- YAML
+added:
+  REPLACEME
+-->
+
+* {Error}
+
+Returns error if the stream has been destroyed with an error.
 
 ##### `writable.writableFinished`
 
@@ -1080,10 +1113,20 @@ further errors except from `_destroy()` may be emitted as `'error'`.
 Implementors should not override this method, but instead implement
 [`readable._destroy()`][readable-_destroy].
 
-##### `readable.destroyed`
+##### `readable.closed`
 
 <!-- YAML
 added: v8.0.0
+-->
+
+* {boolean}
+
+Is `true` after `'close'` has been emitted.
+
+##### `readable.destroyed`
+
+<!-- YAML
+added: REPLACEME
 -->
 
 * {boolean}
@@ -1345,6 +1388,17 @@ added: v12.9.0
 * {boolean}
 
 Becomes `true` when [`'end'`][] event is emitted.
+
+##### `readable.errored`
+
+<!-- YAML
+added:
+  REPLACEME
+-->
+
+* {Error}
+
+Returns error if the stream has been destroyed with an error.
 
 ##### `readable.readableFlowing`
 
@@ -2145,7 +2199,7 @@ for performance reasons.
 ### `stream.Readable.fromWeb(readableStream[, options])`
 
 <!-- YAML
-added: v16.11.0
+added: v17.0.0
 -->
 
 > Stability: 1 - Experimental
@@ -2170,6 +2224,19 @@ added: v16.8.0
 * Returns: `boolean`
 
 Returns whether the stream has been read from or cancelled.
+
+### `stream.isErrored(stream)`
+
+<!-- YAML
+added: v17.3.0
+-->
+
+> Stability: 1 - Experimental
+
+* `stream` {Readable|Writable|Duplex|WritableStream|ReadableStream}
+* Returns: {boolean}
+
+Returns whether the stream has encountered an error.
 
 ### `stream.Readable.toWeb(streamReadable)`
 
@@ -2558,6 +2625,7 @@ class WriteStream extends Writable {
   constructor(filename) {
     super();
     this.filename = filename;
+    this.fd = null;
   }
   _construct(callback) {
     fs.open(this.filename, (err, fd) => {
@@ -2675,6 +2743,8 @@ added: v8.0.0
 
 The `_destroy()` method is called by [`writable.destroy()`][writable-destroy].
 It can be overridden by child classes but it **must not** be called directly.
+Furthermore, the `callback` should not be mixed with async/await
+once it is executed when a promise is resolved.
 
 #### `writable._final(callback)`
 
@@ -3230,6 +3300,7 @@ pipeline(
         // Make sure is valid json.
         JSON.parse(this.data);
         this.push(this.data);
+        callback();
       } catch (err) {
         callback(err);
       }

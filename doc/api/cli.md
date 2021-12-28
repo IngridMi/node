@@ -253,21 +253,6 @@ effort to report stack traces relative to the original source file.
 Overriding `Error.prepareStackTrace` prevents `--enable-source-maps` from
 modifying the stack trace.
 
-### `--experimental-abortcontroller`
-
-<!-- YAML
-added:
-  - v15.0.0
-  - v14.17.0
-changes:
-  - version: v15.0.0
-    pr-url: https://github.com/nodejs/node/pull/33527
-    description: --experimental-abortcontroller is no longer required.
--->
-
-`AbortController` and `AbortSignal` support is enabled by default.
-Use of this command-line flag is no longer required.
-
 ### `--experimental-import-meta-resolve`
 
 <!-- YAML
@@ -1269,7 +1254,8 @@ occurs. One of the following modes can be chosen:
 
 * `throw`: Emit [`unhandledRejection`][]. If this hook is not set, raise the
   unhandled rejection as an uncaught exception. This is the default.
-* `strict`: Raise the unhandled rejection as an uncaught exception.
+* `strict`: Raise the unhandled rejection as an uncaught exception. If the
+  exception is handled, [`unhandledRejection`][] is emitted.
 * `warn`: Always trigger a warning, no matter if the [`unhandledRejection`][]
   hook is set or not but do not print the deprecation warning.
 * `warn-with-error-code`: Emit [`unhandledRejection`][]. If this hook is not

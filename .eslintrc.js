@@ -15,6 +15,7 @@ NodePlugin.RULES_DIR = path.resolve(__dirname, 'tools', 'eslint-rules');
 const ModuleFindPath = Module._findPath;
 const hacks = [
   'eslint-plugin-node-core',
+  'eslint-plugin-jsdoc',
   'eslint-plugin-markdown',
   '@babel/eslint-parser',
   '@babel/plugin-syntax-import-assertions',
@@ -34,7 +35,8 @@ Module._findPath = (request, paths, isMain) => {
 
 module.exports = {
   root: true,
-  plugins: ['markdown', 'node-core'],
+  extends: ['plugin:jsdoc/recommended'],
+  plugins: ['jsdoc', 'markdown', 'node-core'],
   parser: '@babel/eslint-parser',
   parserOptions: {
     babelOptions: {
@@ -311,6 +313,7 @@ module.exports = {
       { blankLine: 'always', prev: 'function', next: 'function' },
     ],
     'prefer-const': ['error', { ignoreReadBeforeAssign: true }],
+    'prefer-object-has-own': 'error',
     'quotes': ['error', 'single', { avoidEscape: true }],
     'quote-props': ['error', 'consistent'],
     'rest-spread-spacing': 'error',
@@ -336,6 +339,19 @@ module.exports = {
     'use-isnan': 'error',
     'valid-typeof': ['error', { requireStringLiterals: true }],
 
+    // JSDoc rules
+    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/require-param-description': 'off',
+    'jsdoc/newline-after-description': 'off',
+    'jsdoc/require-returns-description': 'off',
+    'jsdoc/valid-types': 'off',
+    'jsdoc/no-undefined-types': 'off',
+    'jsdoc/require-param': 'off',
+    'jsdoc/check-tag-names': 'off',
+    'jsdoc/require-returns': 'off',
+    'jsdoc/require-property-description': 'off',
+    'jsdoc/check-param-names': 'off',
+
     // Custom rules from eslint-plugin-node-core
     'node-core/no-unescaped-regexp-dot': 'error',
     'node-core/no-duplicate-requires': 'error',
@@ -347,10 +363,12 @@ module.exports = {
     BigInt: 'readable',
     BigInt64Array: 'readable',
     BigUint64Array: 'readable',
+    Blob: 'readable',
     DOMException: 'readable',
     Event: 'readable',
     EventTarget: 'readable',
     MessageChannel: 'readable',
+    BroadcastChannel: 'readable',
     MessageEvent: 'readable',
     MessagePort: 'readable',
     TextEncoder: 'readable',

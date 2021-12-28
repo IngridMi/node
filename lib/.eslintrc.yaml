@@ -25,6 +25,8 @@ rules:
       message: "Please use `require('internal/errors').hideStackFrames()` instead."
     - selector: "AssignmentExpression:matches([left.name='prepareStackTrace'], [left.property.name='prepareStackTrace'])"
       message: "Use 'overrideStackTrace' from 'lib/internal/errors.js' instead of 'Error.prepareStackTrace'."
+    - selector: "ThrowStatement > NewExpression[callee.name=/^ERR_[A-Z_]+$/] > ObjectExpression:first-child:not(:has([key.name='message']):has([key.name='code']):has([key.name='syscall']))"
+      message: "The context passed into SystemError constructor must have .code, .syscall and .message."
   no-restricted-globals:
     - error
     - name: AbortController
@@ -35,6 +37,8 @@ rules:
       # disabled with --no-harmony-atomics CLI flag.
     - name: Atomics
       message: "Use `const { Atomics } = globalThis;` instead of the global."
+    - name: Blob
+      message: "Use `const { Blob } = require('buffer');` instead of the global."
     - name: Buffer
       message: "Use `const { Buffer } = require('buffer');` instead of the global."
     - name: DOMException
@@ -47,6 +51,8 @@ rules:
       # disabled with --without-intl build flag.
     - name: Intl
       message: "Use `const { Intl } = globalThis;` instead of the global."
+    - name: BroadcastChannel
+      message: "Use `const { BroadcastChannel } = require('internal/worker/io');` instead of the global."
     - name: MessageChannel
       message: "Use `const { MessageChannel } = require('internal/worker/io');` instead of the global."
     - name: MessageEvent

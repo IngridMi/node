@@ -121,7 +121,7 @@ If you are modifying code, please be sure to run `make lint` (or
 code style guide.
 
 Any documentation you write (including code comments and API documentation)
-should follow the [Style Guide](../doc-style-guide.md). Code samples
+should follow the [Style Guide](../../README.md). Code samples
 included in the API docs will also be checked when running `make lint` (or
 `vcbuild.bat lint` on Windows). If you are adding to or deprecating an API,
 add or change the appropriate YAML documentation. Use `REPLACEME` for the
@@ -251,7 +251,9 @@ And on Windows:
 > vcbuild test
 ```
 
-(See the [running tests][] section of Building guide for more details.)
+For some configurations, running all tests might take a long time (an hour or
+more). To run a subset of the test suite, see the [running tests][] section of
+the Building guide.
 
 ### Step 7: Push
 
@@ -270,6 +272,11 @@ From within GitHub, opening a new pull request will present you with a
 details, but feel free to skip parts if you're not sure what to put.
 
 Once opened, pull requests are usually reviewed within a few days.
+
+To get feedback on your proposed change even though it is not ready
+to land, use the `Convert to draft` option in the GitHub UI.
+Do not use the `wip` label as it might not prevent the PR
+from landing before you are ready.
 
 ### Step 9: Discuss and update
 
@@ -299,17 +306,10 @@ $ git push --force-with-lease origin my-branch
 ```
 
 **Important:** The `git push --force-with-lease` command is one of the few ways
-to delete history in `git`. Before you use it, make sure you understand the
-risks. If in doubt, you can always ask for guidance in the pull request.
-
-If you happen to make a mistake in any of your commits, do not worry. You can
-amend the last commit (for example if you want to change the commit log).
-
-```text
-$ git add any/changed/files
-$ git commit --amend
-$ git push --force-with-lease origin my-branch
-```
+to delete history in `git`. It also complicates the review process, as it won't
+allow reviewers to get a quick glance on what changed. Before you use it, make
+sure you understand the risks. If in doubt, you can always ask for guidance in
+the pull request.
 
 There are a number of more advanced mechanisms for managing commits using
 `git rebase` that can be used, but are beyond the scope of this guide.

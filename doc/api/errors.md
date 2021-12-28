@@ -344,7 +344,10 @@ The location information will be one of:
 * `plain-filename.js:line:column`, if the frame represents a call internal
   to Node.js.
 * `/absolute/path/to/file.js:line:column`, if the frame represents a call in
-  a user program, or its dependencies.
+  a user program (using CommonJS module system), or its dependencies.
+* `<transport-protocol>:///url/to/module/file.mjs:line:column`, if the frame
+  represents a call in a user program (using ES module system), or
+  its dependencies.
 
 The string representing the stack trace is lazily generated when the
 `error.stack` property is **accessed**.
@@ -1694,7 +1697,7 @@ An attempt was made to construct an object using a non-public constructor.
 ### `ERR_IMPORT_ASSERTION_TYPE_FAILED`
 
 <!-- YAML
-added: REPLACEME
+added: v17.1.0
 -->
 
 An import assertion has failed, preventing the specified module to be imported.
@@ -1704,7 +1707,7 @@ An import assertion has failed, preventing the specified module to be imported.
 ### `ERR_IMPORT_ASSERTION_TYPE_MISSING`
 
 <!-- YAML
-added: REPLACEME
+added: v17.1.0
 -->
 
 An import assertion is missing, preventing the specified module to be imported.
@@ -1714,7 +1717,7 @@ An import assertion is missing, preventing the specified module to be imported.
 ### `ERR_IMPORT_ASSERTION_TYPE_UNSUPPORTED`
 
 <!-- YAML
-added: REPLACEME
+added: v17.1.0
 -->
 
 An import assertion is not supported by this version of Node.js.

@@ -7,7 +7,7 @@
 <!-- YAML
 added: v8.5.0
 changes:
-  - version: REPLACEME
+  - version: v17.1.0
     pr-url: https://github.com/nodejs/node/pull/40250
     description: Add support for import assertions.
   - version:
@@ -155,8 +155,8 @@ typically configured server.
 
 ### URLs
 
-ES modules are resolved and cached as URLs. This means that files containing
-special characters such as `#` and `?` need to be escaped.
+ES modules are resolved and cached as URLs. This means that special characters
+must be [percent-encoded][], such as `#` with `%23` and `?` with `%3F`.
 
 `file:`, `node:`, and `data:` URL schemes are supported. A specifier like
 `'https://example.com/app.js'` is not supported natively in Node.js unless using
@@ -226,8 +226,10 @@ import fs from 'node:fs/promises';
 ## Import assertions
 
 <!-- YAML
-added: REPLACEME
+added: v17.1.0
 -->
+
+> Stability: 1 - Experimental
 
 The [Import Assertions proposal][] adds an inline syntax for module import
 statements to pass on more information alongside the module specifier.
@@ -239,11 +241,12 @@ const { default: barData } =
   await import('./bar.json', { assert: { type: 'json' } });
 ```
 
-Node.js supports the following `type` values:
+Node.js supports the following `type` values, for which the assertion is
+mandatory:
 
-| `type`   | Resolves to      |
-| -------- | ---------------- |
-| `'json'` | [JSON modules][] |
+| Assertion `type` | Needed for       |
+| ---------------- | ---------------- |
+| `'json'`         | [JSON modules][] |
 
 ## Builtin modules
 
@@ -554,18 +557,20 @@ node index.mjs # fails
 node --experimental-json-modules index.mjs # works
 ```
 
+The `assert { type: 'json' }` syntax is mandatory; see [Import Assertions][].
+
 <i id="esm_experimental_wasm_modules"></i>
 
 ## Wasm modules
 
 > Stability: 1 - Experimental
 
-Importing Web Assembly modules is supported under the
+Importing WebAssembly modules is supported under the
 `--experimental-wasm-modules` flag, allowing any `.wasm` files to be
 imported as normal modules while also supporting their module imports.
 
 This integration is in line with the
-[ES Module Integration Proposal for Web Assembly][].
+[ES Module Integration Proposal for WebAssembly][].
 
 For example, an `index.mjs` containing:
 
@@ -633,7 +638,7 @@ CommonJS modules loaded.
 
 <!-- YAML
 changes:
-  - version: REPLACEME
+  - version: v17.1.0
     pr-url: https://github.com/nodejs/node/pull/40250
     description: Add support for import assertions.
 -->
@@ -679,8 +684,8 @@ Node.js module specifier resolution behavior_ when calling `defaultResolve`, the
 /**
  * @param {string} specifier
  * @param {{
- *   conditions: !Array<string>,
- *   parentURL: !(string | undefined),
+ *   conditions: string[],
+ *   parentURL: string | undefined,
  * }} context
  * @param {Function} defaultResolve
  * @returns {Promise<{ url: string }>}
@@ -773,8 +778,8 @@ format to a supported one, for example `yaml` to `module`.
   }} context If resolve settled with a `format`, that value is included here.
  * @param {Function} defaultLoad
  * @returns {Promise<{
-    format: !string,
-    source: !(string | ArrayBuffer | SharedArrayBuffer | Uint8Array),
+    format: string,
+    source: string | ArrayBuffer | SharedArrayBuffer | Uint8Array,
   }>}
  */
 export async function load(url, context, defaultLoad) {
@@ -823,9 +828,12 @@ its own `require` using  `module.createRequire()`.
 
 ```js
 /**
+ * @param {{
+     port: MessagePort,
+   }} utilities Things that preload code might find useful
  * @returns {string} Code to run before application startup
  */
-export function globalPreload() {
+export function globalPreload(utilities) {
   return `\
 globalThis.someInjectedProperty = 42;
 console.log('I just set some globals!');
@@ -836,6 +844,35 @@ const { cwd } = getBuiltin('process');
 const require = createRequire(cwd() + '/<preload>');
 // [...]
 `;
+}
+```
+
+In order to allow communication between the application and the loader, another
+argument is provided to the preload code: `port`. This is available as a
+parameter to the loader hook and inside of the source text returned by the hook.
+Some care must be taken in order to properly call [`port.ref()`][] and
+[`port.unref()`][] to prevent a process from being in a state where it won't
+close normally.
+
+```js
+/**
+ * This example has the application context send a message to the loader
+ * and sends the message back to the application context
+ * @param {{
+     port: MessagePort,
+   }} utilities Things that preload code might find useful
+ * @returns {string} Code to run before application startup
+ */
+export function globalPreload({ port }) {
+  port.onmessage = (evt) => {
+    port.postMessage(evt.data);
+  };
+  return `\
+    port.postMessage('console.log("I went to the Loader and back");');
+    port.onmessage = (evt) => {
+      eval(evt.data);
+    };
+  `;
 }
 ```
 
@@ -1390,7 +1427,8 @@ success!
 [Core modules]: modules.md#core-modules
 [Dynamic `import()`]: https://wiki.developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#Dynamic_Imports
 [ECMAScript Top-Level `await` proposal]: https://github.com/tc39/proposal-top-level-await/
-[ES Module Integration Proposal for Web Assembly]: https://github.com/webassembly/esm-integration
+[ES Module Integration Proposal for WebAssembly]: https://github.com/webassembly/esm-integration
+[Import Assertions]: #import-assertions
 [Import Assertions proposal]: https://github.com/tc39/proposal-import-assertions
 [JSON modules]: #json-modules
 [Node.js Module Resolution Algorithm]: #resolver-algorithm-specification
@@ -1412,12 +1450,15 @@ success!
 [`module.createRequire()`]: module.md#modulecreaterequirefilename
 [`module.syncBuiltinESMExports()`]: module.md#modulesyncbuiltinesmexports
 [`package.json`]: packages.md#nodejs-packagejson-field-definitions
+[`port.ref()`]: https://nodejs.org/dist/latest-v17.x/docs/api/worker_threads.html#portref
+[`port.unref()`]: https://nodejs.org/dist/latest-v17.x/docs/api/worker_threads.html#portunref
 [`process.dlopen`]: process.md#processdlopenmodule-filename-flags
 [`string`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
 [`util.TextDecoder`]: util.md#class-utiltextdecoder
 [cjs-module-lexer]: https://github.com/nodejs/cjs-module-lexer/tree/1.2.2
 [custom https loader]: #https-loader
 [load hook]: #loadurl-context-defaultload
+[percent-encoded]: url.md#percent-encoding-in-urls
 [resolve hook]: #resolvespecifier-context-defaultresolve
 [special scheme]: https://url.spec.whatwg.org/#special-scheme
 [the official standard format]: https://tc39.github.io/ecma262/#sec-modules

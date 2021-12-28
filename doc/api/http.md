@@ -2321,7 +2321,7 @@ client's authentication details.
 
 This property is guaranteed to be an instance of the {net.Socket} class,
 a subclass of {stream.Duplex}, unless the user specified a socket
-type other than {net.Socket}.
+type other than {net.Socket} or internally nulled.
 
 ### `message.statusCode`
 
@@ -3010,7 +3010,7 @@ added:
 * {number}
 
 Read-only property specifying the maximum allowed size of HTTP headers in bytes.
-Defaults to 8 KB. Configurable using the [`--max-http-header-size`][] CLI
+Defaults to 16 KB. Configurable using the [`--max-http-header-size`][] CLI
 option.
 
 This can be overridden for servers and client requests by passing the
